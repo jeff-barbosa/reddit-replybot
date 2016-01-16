@@ -1,0 +1,5 @@
+# {TERM}
+*Definition:* 
+{DEFINITION}
+***
+This is a ReplyBot | [Source](http://github.com/jefferson-dab/reddit-replybot)
