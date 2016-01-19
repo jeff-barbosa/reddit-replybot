@@ -1,0 +1,24 @@
+{
+	"reddit_conf": {
+		"username": "",
+		"password": "",
+		"app_id": "",
+		"app_secret": "",
+		"user_agent": "Reddit-ReplyBot/1.0 by /u/"
+	},
+	"database_conf": {
+		"db_driver": "SQLite",
+		"db_host": "localhost",
+		"db_user": "",
+		"db_password": "",
+		"db_name": "ReplyBot.db"
+	},
+	"general_conf": {
+		"cooldown": 5,
+		"subreddits_list": [
+			""
+		],
+		"trigger": "ReplyBot define:\\s*(.+)",
+		"silent": 0
+	}
+}

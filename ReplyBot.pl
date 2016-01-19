@@ -6,53 +6,67 @@ use JSON;
 use DBI;
 use Reddit::Client;
 
-# Reddit configuration
-my $USERNAME = "";
-my $PASSWORD = "";
-my $APP_ID = "";
-my $APP_SECRET = "";
-my $USERAGENT = "Reddit-ReplyBot/1.0 by /u/". $USERNAME;
+# The Reddit::Client object
+my $reddit;
+# The handler for the database
+my $dbh;
+# Config structures
+my $reddit_conf;
+my $database_conf;
+my $general_conf;
 
-# Database configuration
-my $DB_DRIVER = "SQLite";
-my $DB_HOST = "localhost";
-my $DB_USER = "";
-my $DB_PASSWORD = "";
-my $DB_NAME = "ReplyBot.db";
-
-# General configuration
-my $COOLDOWN = 5;
+my $config_file = "config.json";
 my $last_search = time;
 my %seen_comments;
-my @subreddits_list = ("");
-my $trigger = 'ReplyBot define:\s*(.+)';
-my $silent = 0;
 
-# Bootstrap
-print "Getting auth from Reddit...\n";
-my $reddit = Reddit::Client->new(
-	user_agent => $USERAGENT,
-	client_id => $APP_ID,
-	secret => $APP_SECRET,
-	username => $USERNAME,
-	password => $PASSWORD,
-);
+# Set everything up before running the main loop
+sub bootstrap {
+	# Get configuration
+	print "Parsing ". $config_file ."\n";
+	open(my $fh, "<:utf8", $config_file) or die ($!);
+	{
+		local $/ = undef;
+		my $json_data = decode_json(<$fh>);
+		$reddit_conf = $json_data->{reddit_conf};
+		$database_conf = $json_data->{database_conf};
+		$general_conf = $json_data->{general_conf};
+	}
+	close($fh);
 
-print "Setting a database connection...\n";
-my $dbh = DBI->connect(
-	'DBI:'.$DB_DRIVER.':dbname='.$DB_NAME, 
-	$DB_USER, 
-	$DB_PASSWORD,
-	{RaiseError => 1, sqlite_unicode => 1}
-) or die ("Error: Unable to connect to the database\n");
+	# Connect to Reddit
+	print "Connecting to Reddit...\n";
+	$reddit = Reddit::Client->new(
+		user_agent => $reddit_conf->{user_agent} . $reddit_conf->{username},
+		client_id => $reddit_conf->{app_id},
+		secret => $reddit_conf->{app_secret},
+		username => $reddit_conf->{username},
+		password => $reddit_conf->{password},
+	);
 
+	unless ($reddit->has_token()) {
+		die("Error: Unable to connect to Reddit\n");
+	}
+
+	# Connect to the Database
+	print "Setting database connection...\n";
+	$dbh = DBI->connect(
+		'DBI:'.$database_conf->{db_driver}.
+		':dbname='.$database_conf->{db_name}, 
+		$database_conf->{db_user}, 
+		$database_conf->{db_password},
+		{RaiseError => 1, sqlite_unicode => 1}
+	) or die ("Error: Unable to connect to the database\n");
+
+	print "All set. Calling main loop.\n";
+	mainLoop();
+}
 
 sub mainLoop {
 	while (1) {
-		next if (time - $last_search < $COOLDOWN);
+		next if (time - $last_search < $general_conf->{cooldown});
 		
 		# Request data on new comments for each subreddit the bot is watching
-		foreach my $subreddit (@subreddits_list) {
+		foreach my $subreddit (@{$general_conf->{subreddits_list}}) {
 			# Just ask for the last comments of the subreddit
 			my $data = $reddit->json_request(
 				'GET',
@@ -66,7 +80,7 @@ sub mainLoop {
 				next if ($seen_comments{$comment->{id}});
 				$seen_comments{$comment->{id}} = 1;
 
-				if ($comment->{body} =~ /$trigger/) {
+				if ($comment->{body} =~ /$general_conf->{trigger}/) {
 					my $term = $1;
 					my $query = "SELECT definition FROM defined_terms WHERE term = ?";
 					my $stmt = $dbh->prepare($query);
@@ -97,7 +111,9 @@ sub generateReply {
 	my $reply = "";
 	my $REDDIT_NEWLINE = "    \n";
 
-	print "Replying to ". $target ." with the definition of: ". $term ."\n" unless ($silent);
+	unless ($general_conf->{silent}) {
+		print "Replying to ". $target ." with the definition of: ". $term ."\n";
+	}
 
 	open (my $fh, "<:utf8", "reply.txt")
   or die ("Error: reply.txt not found or ReplyBot doesn't have read permission\n");
@@ -121,5 +137,4 @@ sub generateReply {
 	close ($fh);
 }
 
-print "Calling main...\n";
-mainLoop();
+bootstrap();
