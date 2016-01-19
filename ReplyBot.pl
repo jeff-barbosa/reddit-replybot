@@ -62,6 +62,8 @@ sub bootstrap {
 }
 
 sub mainLoop {
+	printInfo();
+
 	while (1) {
 		next if (time - $last_search < $general_conf->{cooldown});
 		
@@ -135,6 +137,16 @@ sub generateReply {
   );
 
 	close ($fh);
+}
+
+# Just an utility that prints the username and subreddit list to the console
+sub printInfo {
+	print "---------- BOT INFO ----------\n";
+	print "User: ". $reddit_conf->{username} ."\n";
+	print "Watching subs: ";
+	print " ". $_ ." " foreach (@{$general_conf->{subreddits_list}});
+	print "\n";
+	print "------------------------------\n";
 }
 
 bootstrap();
