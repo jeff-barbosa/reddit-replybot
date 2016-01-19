@@ -19,18 +19,20 @@ And a new SQLite 3 database will be created.
 
 The only table the bot will use is "defined_terms". You can input new terms and their definitions to the database. How to work with the SQLite is beyond the scope of this README file.
 
+Next thing you should do is rename the file `config.json.sample` to `config.json` and fill in your information (Read next section).
+
 #### Settings
 
-Before running the bot, you must properly set its configuration. You'll find them at the beginning of the `ReplyBot.pl` file under three "categories" (so to speak): Reddit configuration, DB configuration and general configuration.
+Before running the bot, you must properly set its configuration. After properly renaming `config.json.sample` to `config.json`, open the file with any text editor. Inside there's a JSON object. There are three main sections: reddit_conf, database_conf and general_conf.
 
 **Reddit configuration**    
 You need to input the basic information so the bot can connect to Reddit. 
 
-`$USERNAME` This is your Reddit username     
-`$PASSWORD` This is your Reddit password    
-`$APP_ID` The ID for your app     
-`$APP_SECRET` The secret (private key) for you app    
-`$USERAGENT` This is the user-agent of your bot, you don't really need to change this    
+`username` This is your Reddit username     
+`password` This is your Reddit password    
+`app_id` The ID for your app     
+`app_secret` The secret (private key) for you app    
+`user_agent` This is the user-agent of your bot, you don't really need to change this    
 
 If you don't know what are the APP_ID and APP_SECRET, take a quick look at [Reddit's API guide](https://github.com/reddit/reddit/wiki/OAuth2). 
 
@@ -40,12 +42,18 @@ This is the configuration used by your database. By default we're using the SQLi
 **General configuration**    
 Misc stuff. The most important thing here is the subreddit list that your bot must watch. 
 
-`$COOLDOWN` How many seconds the bot will wait before requesting Reddit for new comments     
-`$last_search` Stores the last time we checked for new comments    
-`%seen_comments` This is a hash with the IDs of comments we already replied to    
-`@subreddits_list` This is a list of subs the bot is watching, example: `@subreddits_list = ("MyAwesomeSub1","MyAwesomeSub2");`    
-`$trigger` This is the trigger phrase. If the bot see this he'll try to reply. By default it is `ReplyBot define:\s*(.+)`, so if someone says "ReplyBot define: ThisWeirdTerm" the bot we'll try to define "ThisWeirdTerm"    
-`$silent` Whether or not the bot should print a message to the console when he replies to a comment
+`cooldown` How many seconds the bot will wait before requesting Reddit for new comments     
+`subreddits_list` This is a list of subs the bot is watching, example:    
+  ```
+ "subreddits_list": [
+  "MyAwesomeSub1",
+  "MyAwesomeSub2",
+  "MyAwesomeSub3"
+ ]
+ 
+ ```
+`trigger` This is the trigger phrase. If the bot see this he'll try to reply. By default it is `ReplyBot define:\s*(.+)`, so if someone says "ReplyBot define: ThisWeirdTerm" the bot we'll try to define "ThisWeirdTerm"    
+`silent` Whether or not the bot should print a message to the console when he replies to a comment
 
 **Reply.txt**
 
