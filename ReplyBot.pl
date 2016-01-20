@@ -65,6 +65,9 @@ sub mainLoop {
 	printInfo();
 
 	while (1) {
+		if (my $line = getLine()) {
+			runCommand($line);
+		}
 		next if (time - $last_search < $general_conf->{cooldown});
 		
 		# Request data on new comments for each subreddit the bot is watching
@@ -147,6 +150,32 @@ sub printInfo {
 	print " ". $_ ." " foreach (@{$general_conf->{subreddits_list}});
 	print "\n";
 	print "------------------------------\n";
+}
+
+# Get a command instruction from the user at run time
+sub getLine {
+	my $bits = '';
+	my $line = undef;
+
+	vec($bits, fileno(STDIN), 1) = 1;
+
+	if  (select($bits, undef, undef, 0) > 0) {
+		$line = <STDIN>;
+		$line =~ s/\n//g;
+	}
+
+	return $line;
+}
+
+# Run a command given by the user
+sub runCommand {
+	my $cmd = shift;
+
+	if ($cmd =~ /^status$/i) {
+		printInfo();
+	} else {
+		print "Error: Invalid command (". $cmd .")\n";
+	}
 }
 
 bootstrap();
