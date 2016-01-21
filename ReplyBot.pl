@@ -149,6 +149,7 @@ sub printInfo {
 	print "Watching subs: ";
 	print " ". $_ ." " foreach (@{$general_conf->{subreddits_list}});
 	print "\n";
+	print "Replies this session: ". keys(%seen_comments) ."\n";
 	print "------------------------------\n";
 }
 
