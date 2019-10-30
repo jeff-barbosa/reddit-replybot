@@ -1,6 +1,8 @@
 # ReplyBot
 General purpose reply bot for Reddit
 
+**No longer supported!**
+
 ### Requirements
 * Perl interpreter
   * Reddit::Client module
